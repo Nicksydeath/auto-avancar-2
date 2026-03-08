@@ -128,6 +128,7 @@
             document.body
         ];
         const target = targets.find(el => el !== null);
+        console.debug('%c[AA] ⏭ avançando página — ' + new Date().toLocaleTimeString(), 'color:#00ff88;font-weight:bold;font-family:monospace');
         target.dispatchEvent(new KeyboardEvent("keydown", {
             key: "ArrowRight",
             code: "ArrowRight",
@@ -145,18 +146,73 @@
     }
 
     function startCycle() {
-        remainingSeconds = totalSeconds;
+        const jitter = Math.floor(Math.random() * 21) - 10;
+        remainingSeconds = Math.max(5, totalSeconds + jitter);
+        console.debug('%c[AA] ⏱ próximo clique em ' + remainingSeconds + 's (jitter: ' + (jitter >= 0 ? '+' : '') + jitter + 's)', 'color:#00ff88;font-family:monospace');
         document.getElementById("countdown").textContent = formatTime(remainingSeconds);
 
         countdownInterval = setInterval(() => {
             remainingSeconds--;
             if (remainingSeconds <= 0) {
                 clickNextButton();
-                remainingSeconds = totalSeconds;
+                const nextJitter = Math.floor(Math.random() * 21) - 10;
+                remainingSeconds = Math.max(5, totalSeconds + nextJitter);
+                console.debug('%c[AA] ⏱ próximo clique em ' + remainingSeconds + 's (jitter: ' + (nextJitter >= 0 ? '+' : '') + nextJitter + 's)', 'color:#00ff88;font-family:monospace');
             }
             document.getElementById("countdown").textContent = formatTime(remainingSeconds);
         }, 1000);
     }
+
+
+    // ======= MOVIMENTO FALSO DE MOUSE =======
+    let mouseX = Math.floor(Math.random() * window.innerWidth);
+    let mouseY = Math.floor(Math.random() * window.innerHeight);
+    let mouseTarget = { x: mouseX, y: mouseY };
+    let mouseMoveTimeout = null;
+
+    function easeToTarget() {
+        // Suaviza o movimento em direção ao alvo (simula inércia humana)
+        mouseX += (mouseTarget.x - mouseX) * (0.04 + Math.random() * 0.06);
+        mouseY += (mouseTarget.y - mouseY) * (0.04 + Math.random() * 0.06);
+
+        document.dispatchEvent(new MouseEvent("mousemove", {
+            bubbles: true,
+            cancelable: true,
+            clientX: Math.round(mouseX),
+            clientY: Math.round(mouseY),
+            movementX: Math.round(mouseTarget.x - mouseX),
+            movementY: Math.round(mouseTarget.y - mouseY)
+        }));
+
+        const distX = Math.abs(mouseTarget.x - mouseX);
+        const distY = Math.abs(mouseTarget.y - mouseY);
+
+        if (distX > 2 || distY > 2) {
+            // Delay humano variável entre 12-45ms (mais lento e irregular)
+            const moveDelay = 12 + Math.random() * 33;
+            mouseMoveTimeout = setTimeout(easeToTarget, moveDelay);
+        } else {
+            // Pausa aleatória antes do próximo destino: 2-9s
+            const pause = 2000 + Math.random() * 7000;
+            mouseMoveTimeout = setTimeout(pickNewTarget, pause);
+        }
+    }
+
+    function pickNewTarget() {
+        // Passo aleatório entre 80px e 500px para variar bastante
+        const maxStep = 80 + Math.floor(Math.random() * 420);
+        const angleJitter = Math.random() * Math.PI * 2;
+        const dist = maxStep * (0.4 + Math.random() * 0.6);
+        mouseTarget.x = Math.max(0, Math.min(window.innerWidth,
+            mouseX + Math.cos(angleJitter) * dist));
+        mouseTarget.y = Math.max(0, Math.min(window.innerHeight,
+            mouseY + Math.sin(angleJitter) * dist));
+        console.debug('%c[AA] 🖱 mouse → (' + Math.round(mouseTarget.x) + ', ' + Math.round(mouseTarget.y) + ')', 'color:#00ff88;font-family:monospace');
+        easeToTarget();
+    }
+
+    // Inicia o movimento falso
+    pickNewTarget();
 
     document.getElementById("toggleBtn").onclick = function () {
         if (!running) {
