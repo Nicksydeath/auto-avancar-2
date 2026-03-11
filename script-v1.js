@@ -94,19 +94,69 @@
         background: #00ff88 !important;
         color: #0d0d0d !important;
     }
+
+    #autoMenuHideBtn {
+        all: initial !important;
+        position: fixed !important;
+        top: 8px !important;
+        right: 212px !important;
+        width: 12px !important;
+        height: 12px !important;
+        border-radius: 50% !important;
+        background: #888 !important;
+        cursor: pointer !important;
+        z-index: 999999999 !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
+        transition: background 0.2s !important;
+    }
+
+    #autoMenuHideBtn:hover {
+        background: #aaa !important;
+    }
     `;
     document.head.appendChild(style);
 
     const menu = document.createElement("div");
     menu.id = "autoMenu";
     menu.innerHTML = `
+        <div id="autoMenuInner" style="display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;">
         <div class="menu-title">Auto Avançar</div>
         <div class="label">Intervalo (min.seg)</div>
         <input id="delayInput" type="text" value="1">
         <div id="countdown">00:00</div>
         <div class="label">Próximo clique</div>
         <button id="toggleBtn">Iniciar</button>
+        </div>
     `;
+
+    // Botão de ocultar
+    const hideBtn = document.createElement('div');
+    hideBtn.id = 'autoMenuHideBtn';
+    hideBtn.title = 'Ocultar menu';
+    document.body.appendChild(hideBtn);
+
+    let menuVisible = true;
+    hideBtn.onclick = function() {
+        menuVisible = !menuVisible;
+        const inner = document.getElementById('autoMenuInner');
+        if (!menuVisible) {
+            inner.style.setProperty('display', 'none', 'important');
+            menu.style.setProperty('padding', '0', 'important');
+            menu.style.setProperty('border', 'none', 'important');
+            menu.style.setProperty('background', 'transparent', 'important');
+            menu.style.setProperty('box-shadow', 'none', 'important');
+            hideBtn.style.setProperty('background', '#555', 'important');
+            hideBtn.title = 'Mostrar menu';
+        } else {
+            inner.style.setProperty('display', 'flex', 'important');
+            menu.style.setProperty('padding', '10px 10px 8px 10px', 'important');
+            menu.style.setProperty('border', '1px solid #00ff88', 'important');
+            menu.style.setProperty('background', '#111', 'important');
+            menu.style.setProperty('box-shadow', 'none', 'important');
+            hideBtn.style.setProperty('background', '#888', 'important');
+            hideBtn.title = 'Ocultar menu';
+        }
+    };
     document.body.appendChild(menu);
 
     let countdownInterval = null;
@@ -228,5 +278,14 @@
             running = false;
         }
     };
+
+
+    // ======= ATALHO CTRL+SHIFT =======
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey) {
+            e.stopImmediatePropagation();
+            hideBtn.click();
+        }
+    }, true);
 
 })();
